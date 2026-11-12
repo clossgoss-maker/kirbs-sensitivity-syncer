@@ -1,7 +1,7 @@
 {
   "name": "sensync",
   "productName": "Kirb's Sensitivity Syncer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Kirb's Sensitivity Syncer: set your cm/360 and FOV once and write it into any game's config file.",
   "main": "app/main.js",
   "scripts": {
