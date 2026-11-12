@@ -231,7 +231,7 @@ test('import: CoD4 end to end (find file, seta keys, save, apply)', () => {
 
   const d = MS.parse(fs.readFileSync(path.join(SAMPLES, 'cod4.txt'), 'utf8'));
   const found = d.paths.flatMap((p) => L.findFiles([p.pattern], m.ctx));
-  assert.deepStrictEqual(found, [cfg]); // single-player config doesn't exist here
+  assert.deepStrictEqual(found, [fs.realpathSync.native(cfg)]); // single-player config doesn't exist here
   const scanned = L.scanFile(cfg).keys.map((k) => k.key);
   assert.ok(scanned.includes('0xBC3E3CAE') && scanned.includes('0x8572B2C7'), scanned.join());
 
@@ -387,7 +387,7 @@ test('community: sharing turns PC paths into tokens and leaves calibration out',
     '%LOCALAPPDATA%/CD Projekt Red/Cyberpunk 2077/UserSettings.json',
   ]);
   const json = JSON.stringify(r.profile);
-  assert.ok(!json.includes(m.root.replace(/\\/g, '/')) && !json.includes('12345'), json);
+  assert.ok(!json.includes(m.root.replace(/\\/g, '/')) && !json.includes(fs.realpathSync.native(m.root).replace(/\\/g, '/')) && !json.includes('12345'), json);
   assert.ok(!('yaw' in r.profile) && !('calibration' in r.profile)); // calibrated yaw isn't shared
   assert.strictEqual(r.profile.notes, 'Close the game first.');
   // paths outside the known places can't be shared

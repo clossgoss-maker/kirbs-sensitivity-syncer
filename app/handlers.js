@@ -133,12 +133,18 @@ function makeHandlers(st, makeCtx, host = {}) {
       const g = game(id);
       if (!g.custom || g.builtin) throw new Error('Only games you added can be shared.');
       const c = fresh();
+      // compare real folder names: Windows can spell the same folder two ways (e.g. RUNNER~1 vs runneradmin)
+      const real = (p) => { try { return fs.realpathSync.native(p); } catch { return p; } };
       const up = c.env.USERPROFILE || c.env.HOME || '';
+      const env = { ...c.env };
+      for (const k of ['LOCALAPPDATA', 'APPDATA', 'USERPROFILE']) if (env[k]) env[k] = real(env[k]);
       const roots = {
-        steamLibs: L.steamLibraries(c), steamRoots: L.steamRoots(c), documents: L.documentsDirs(c),
-        savedGames: up ? [path.join(up, 'Saved Games')] : [], env: c.env,
+        steamLibs: L.steamLibraries(c).map(real), steamRoots: L.steamRoots(c).map(real), documents: L.documentsDirs(c).map(real),
+        savedGames: up ? [real(path.join(up, 'Saved Games'))] : [], env,
       };
-      const r = C.shareableProfile(g, roots, { note, presets: E.PRESETS });
+      const files = {};
+      for (const [fid, f] of Object.entries(g.files || {})) files[fid] = { ...f, paths: (f.paths || []).map(real) };
+      const r = C.shareableProfile({ ...g, files }, roots, { note, presets: E.PRESETS });
       return { ...r, url: r.ok ? C.shareUrl(r.profile) : null, repo: C.REPO };
     },
     installUpdate: () => (host.installUpdate ? host.installUpdate() : false),
