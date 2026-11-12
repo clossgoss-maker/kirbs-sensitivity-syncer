@@ -1,8 +1,9 @@
 'use strict';
-// The shared game library: game setups people contribute through GitHub, so everyone who installs
-// the app gets them. Only *setup* is shared (where the config is, which settings, ranges, FOV type).
-// Calibration numbers are never shared: they come from mouse-sensitivity.com, whose terms forbid
-// redistributing them. Each person calibrates once with the site panel.
+// The shared game library: games people contribute through GitHub, so everyone who installs the app
+// gets them ready to go: where the config is, which settings, ranges, FOV type, and the game's yaw
+// (from the sharer's calibration) so friends don't have to calibrate. Your own calibration always wins.
+// The repo owner chose to share yaws for a private group of friends, knowing mouse-sensitivity.com's
+// terms don't allow redistributing its numbers.
 //
 // Profiles come from strangers, so everything here is validated against a strict allowlist:
 // paths must sit under known game-config roots and look like config files, and unknown fields are dropped.
@@ -94,6 +95,15 @@ function validateProfile(p, presets = []) {
   if (p.preset != null) {
     const pr = presets.find((x) => x.id === p.preset);
     if (pr) { out.preset = pr.id; out.yaw = pr.yaw; } else errors.push(`unknown preset ${p.preset}`);
+  } else if (p.yaw != null) {
+    // the sharer's calibrated yaw: degrees per mouse count at sensitivity 1
+    if (typeof p.yaw === 'number' && Number.isFinite(p.yaw) && p.yaw > 0 && p.yaw < 1000) out.yaw = Number(p.yaw.toPrecision(10));
+    else errors.push('yaw must be a positive number');
+  }
+  // the FOV (game's own units) the yaw was calibrated at, for games whose sensitivity depends on FOV
+  if (p.calFov != null) {
+    if (typeof p.calFov === 'number' && p.calFov > 0 && p.calFov < 1000) out.calFov = p.calFov;
+    else errors.push('calFov must be a number');
   }
   out.process = (Array.isArray(p.process) ? p.process : []).filter((x) => typeof x === 'string' && /^[\w .\-]{1,60}\.exe$/i.test(x)).slice(0, 4);
   out.notes = CLEAN_TEXT(p.notes, 300) || 'Shared by the community. Calibrate it once with the mouse-sensitivity.com panel.';
@@ -106,11 +116,11 @@ function validateProfile(p, presets = []) {
 
 /**
  * Turn a game added on this PC into a shareable profile: absolute paths become tokens
- * ({STEAMLIB}, %LOCALAPPDATA%, …), Steam account folders become *, and nothing from
- * mouse-sensitivity.com (calibration, its notes) is included.
+ * ({STEAMLIB}, %LOCALAPPDATA%, …), Steam account folders become *, and the yaw from this PC's
+ * calibration goes along (with the FOV it was calibrated at). Your cm/360, DPI and the site's notes don't.
  * roots: { steamLibs, steamRoots, documents, savedGames, env }
  */
-function shareableProfile(game, roots, { note, presets = [] } = {}) {
+function shareableProfile(game, roots, { note, presets = [], yaw, calFov } = {}) {
   const errors = [];
   const norm = (p) => p.replace(/\\/g, '/');
   const lower = (p) => norm(p).toLowerCase();
@@ -148,9 +158,12 @@ function shareableProfile(game, roots, { note, presets = [] } = {}) {
     id: game.id, name: game.name, apply: game.apply, files,
     sens: game.sens, fov: game.fov || null, fovAffectsSens: game.fovAffectsSens,
     process: game.process, notes: note || undefined,
-    // only engine presets are shared, never a yaw that came from a calibration
-    preset: game.yaw ? (presets.find((p) => Math.abs(p.yaw - game.yaw) < 1e-9) || {}).id : undefined,
   };
+  const y = yaw != null ? yaw : game.yaw;
+  const preset = y ? presets.find((p) => Math.abs(p.yaw - y) < 1e-9) : null;
+  if (preset) draft.preset = preset.id; // a known engine: share the name, not the number
+  else if (y) draft.yaw = y;
+  if (y && calFov != null) draft.calFov = calFov;
   const v = validateProfile(draft, presets);
   return { ok: !errors.length && v.ok, errors: [...errors, ...v.errors], profile: v.profile };
 }

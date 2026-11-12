@@ -31,6 +31,8 @@
     "file": "sens",
     "key": "FieldOfView"
   },
+  "yaw": 0.009999999955,
+  "calFov": 120,
   "process": [],
   "notes": "Close the game before applying: it rewrites UserSettings.json when it exits. Sets horizontal and vertical together."
 }

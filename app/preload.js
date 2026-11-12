@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('api', {
   appVersion: () => call('appVersion'),
   refreshCommunity: () => call('refreshCommunity'),
   shareGame: (id, note) => call('shareGame', id, note),
+  reportUrl: (id) => call('reportUrl', id),
   onUpdate: (cb) => { ipcRenderer.on('update', (_e, s) => cb(s)); },
   onCommunityUpdated: (cb) => { ipcRenderer.on('community-updated', (_e, n) => cb(n)); },
   closeCalculator: () => call('closeCalculator'),

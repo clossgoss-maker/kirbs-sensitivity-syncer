@@ -21,7 +21,7 @@ Build the installer yourself with `npm install` then `npm run dist`; it lands in
 
 ## Shared games
 
-Games people add can be shared with everyone: open the game's **Set up** and click **Share with everyone…**. Only the game's **setup** is shared (where its config file is, which settings, ranges, FOV type), never your calibration or anything from mouse-sensitivity.com, so everyone calibrates each game once with the site panel. See [community/README.md](community/README.md) for how sharing and approval work.
+Games people add can be shared with everyone: calibrate the game, open its **Set up** and click **Share with everyone…**. The game goes into the shared library with its **yaw**, so friends get it ready to go with no setup (their own calibration still wins if they make one). See [community/README.md](community/README.md) for how sharing and approval work.
 
 ## Releasing (maintainers)
 

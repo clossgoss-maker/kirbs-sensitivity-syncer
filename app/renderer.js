@@ -379,6 +379,7 @@ function openSetup(id) {
       ${gp.calibration || gp.manualSens != null ? '<button id="resetScale" class="ghost">Reset scaling</button>' : ''}
       ${g.custom && !g.builtin ? '<button id="delGame" class="ghost" style="color:var(--bad)">Remove game</button>' : ''}
       ${g.custom && !g.builtin ? '<button id="shareGame">Share with everyone…</button>' : ''}
+      ${g.community ? '<button id="reportGame" class="ghost">Report a wrong value</button>' : ''}
       <button id="saveSetup" class="primary">Save</button>
     </div>`);
   const root = $('#modalBody');
@@ -410,6 +411,10 @@ function openSetup(id) {
     closeModal(); refresh();
   });
   $('#shareGame')?.addEventListener('click', () => openShare(id));
+  $('#reportGame')?.addEventListener('click', async () => {
+    const url = await api.reportUrl(id);
+    if (url) api.openExternal(url);
+  });
   $('#delGame')?.addEventListener('click', async () => { if (confirm(`Remove ${g.name} from the list? Its config file isn't touched.`)) { S = await api.deleteCustomGame(id); closeModal(); renderGames(); } });
 }
 
@@ -420,9 +425,10 @@ async function openShare(id, note = '') {
   try { r = await api.shareGame(id, note || undefined); } catch (err) { return alert(err.message); }
   openModal(`
     <h2>Share ${esc(g.name)} with everyone</h2>
-    <p>This sends the game's <b>setup</b> (where its config file is, which settings to change, ranges and FOV type) to the shared library, so anyone who installs Kirb's Sensitivity Syncer gets it.
-      Your calibration and anything from mouse-sensitivity.com are <b>not</b> included: everyone calibrates once with the site panel.</p>
+    <p>This sends the game to the shared library: where its config file is, which settings to change, ranges, FOV type, and its <b>yaw</b> from your calibration, so friends get it ready to go with no setup.
+      Your own cm/360 and DPI aren't included, and anyone's own calibration always wins over a shared yaw.</p>
     ${r.ok ? '' : `<ul class="importlist">${r.errors.map((e) => `<li class="warn">${esc(e)}</li>`).join('')}</ul>`}
+    ${(r.warnings || []).length ? `<ul class="importlist">${r.warnings.map((e) => `<li class="warn">${esc(e)}</li>`).join('')}</ul>` : ''}
     <h3>Note for other players (optional)</h3>
     <textarea id="shareNote" rows="2" maxlength="300" placeholder="e.g. Close the game before applying. Works with the Steam version.">${esc(note)}</textarea>
     <div class="row" style="margin-top:6px"><button id="shareUpdate" class="small">Update preview</button></div>

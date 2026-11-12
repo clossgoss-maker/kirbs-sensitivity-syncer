@@ -144,8 +144,29 @@ function makeHandlers(st, makeCtx, host = {}) {
       };
       const files = {};
       for (const [fid, f] of Object.entries(g.files || {})) files[fid] = { ...f, paths: (f.paths || []).map(real) };
-      const r = C.shareableProfile({ ...g, files }, roots, { note, presets: E.PRESETS });
+      // the yaw this PC uses: from a calibration, or from an exact number at your current cm/360 and DPI
+      const prefs = st.getPrefs();
+      const gp = prefs.games[g.id] || {};
+      let yaw = E.effectiveYaw(g, gp);
+      if (gp.manualSens != null && !gp.calibration) yaw = M.yawFromMeasurement(Number(gp.manualSens), prefs.dpi, prefs.cm360);
+      const calFov = g.fov ? (gp.calibration && gp.calibration.fov != null ? gp.calibration.fov : E.fovAfterApply(g, prefs, E.readCurrent(g, prefs, c))) : null;
+      const r = C.shareableProfile({ ...g, files }, roots, { note, presets: E.PRESETS, yaw, calFov });
+      if (r.ok && !r.profile.yaw) r.warnings = ['This game isn\'t calibrated yet, so friends will still need to set it up. Calibrate it first to share its yaw.'];
       return { ...r, url: r.ok ? C.shareUrl(r.profile) : null, repo: C.REPO };
+    },
+    // a GitHub issue about a shared game whose numbers feel off
+    reportUrl: (id) => {
+      const g = game(id);
+      if (!C.REPO) return null;
+      const prefs = st.getPrefs();
+      const v = E.computeValues(g, prefs);
+      const body = [
+        `**Game:** ${g.name} (\`${g.id}\`)`,
+        `**Shared yaw:** ${g.yaw ?? 'none'}${g.calFov != null ? ` (calibrated at FOV ${g.calFov})` : ''}`,
+        `**What Kirb set:** ${v.sens ?? '?'} for ${prefs.cm360} cm/360 at ${prefs.dpi} DPI${v.fov != null ? `, FOV ${v.fov}` : ''}`,
+        '', '**What feels wrong?** (too fast / too slow, what you measured…)', '',
+      ].join('\n');
+      return `https://github.com/${C.REPO}/issues/new?${new URLSearchParams({ title: `Wrong value: ${g.name}`, labels: 'wrong-value', body })}`;
     },
     installUpdate: () => (host.installUpdate ? host.installUpdate() : false),
     appVersion: () => (host.appVersion ? host.appVersion() : require('../package.json').version),

@@ -108,10 +108,13 @@ function computeValues(game, prefs) {
   }
 
   // FOV changes this game's sensitivity, so the calibration only holds at the FOV it was made at
+  // (your own calibration's FOV, or the FOV a shared yaw was calibrated at)
   const cal = gp.calibration;
-  if (game.fovAffectsSens && cal && cal.fov != null && out.fov != null && Math.abs(out.fov - cal.fov) > 0.5) {
-    warnings.push(`FOV changes this game's sensitivity. It was calibrated at FOV ${cal.fov} and you're now setting ${out.fov}, so the cm/360 will be off. Recalibrate in Set up, or keep its FOV at ${cal.fov}.`);
+  const calFov = cal ? cal.fov : gp.manualSens == null ? game.calFov : null;
+  if (game.fovAffectsSens && calFov != null && out.fov != null && Math.abs(out.fov - calFov) > 0.5) {
+    warnings.push(`FOV changes this game's sensitivity. It was calibrated at FOV ${calFov} and you're now setting ${out.fov}, so the cm/360 will be off. Recalibrate in Set up, or keep its FOV at ${calFov}.`);
   }
+  if (out.source === 'calculated' && game.community && !game.preset) out.source = 'shared yaw';
   return out;
 }
 

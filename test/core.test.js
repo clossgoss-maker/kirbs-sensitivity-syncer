@@ -362,15 +362,17 @@ test('community: only safe, setup-only profiles are accepted', () => {
   assert.ok(!bad({ files: { sens: { paths: ['%LOCALAPPDATA%/Game/run.exe'] } } }).ok); // not a config file
   assert.ok(!bad({ id: 'Bad ID!' }).ok);
   assert.ok(!bad({ sens: { file: 'sens', keys: ['x"; rm -rf'] } }).ok);
-  // a yaw is never taken from a profile; only a known engine preset sets one
-  const withYaw = C.validateProfile({ ...good, yaw: 0.0123 }, E.PRESETS);
-  assert.ok(withYaw.ok && !('yaw' in withYaw.profile));
-  const preset = C.validateProfile({ ...good, preset: 'source' }, E.PRESETS);
+  // a shared yaw (and the FOV it was calibrated at) comes along; bad numbers are rejected
+  const withYaw = C.validateProfile({ ...good, yaw: 0.0123, calFov: 90 }, E.PRESETS);
+  assert.ok(withYaw.ok && withYaw.profile.yaw === 0.0123 && withYaw.profile.calFov === 90);
+  assert.ok(!bad({ yaw: -1 }).ok && !bad({ yaw: 'fast' }).ok && !bad({ calFov: 'x' }).ok);
+  // a known engine preset sets its own yaw
+  const preset = C.validateProfile({ ...good, preset: 'source', yaw: 5 }, E.PRESETS);
   assert.strictEqual(preset.profile.yaw, 0.022);
   assert.ok(!C.validateProfile({ ...good, preset: 'nope' }, E.PRESETS).ok);
 });
 
-test('community: sharing turns PC paths into tokens and leaves calibration out', () => {
+test('community: sharing turns PC paths into tokens and shares the calibrated yaw', () => {
   const m = fakeMachine();
   const { makeHandlers } = require('../app/handlers');
   const h = makeHandlers(m.st, () => L.makeContext({ env: m.env, platform: 'linux' }));
@@ -388,8 +390,17 @@ test('community: sharing turns PC paths into tokens and leaves calibration out',
   ]);
   const json = JSON.stringify(r.profile);
   assert.ok(!json.includes(m.root.replace(/\\/g, '/')) && !json.includes(fs.realpathSync.native(m.root).replace(/\\/g, '/')) && !json.includes('12345'), json);
-  assert.ok(!('yaw' in r.profile) && !('calibration' in r.profile)); // calibrated yaw isn't shared
+  near(r.profile.yaw, M.yawFromMeasurement(2, 800, 30), 1e-9); // the calibration's yaw, not the profile's old one
+  assert.ok(!('calibration' in r.profile) && !json.includes('"cm360"') && !json.includes('"dpi"')); // your target stays private
   assert.strictEqual(r.profile.notes, 'Close the game first.');
+  // an exact-number game shares the yaw that number means at your current target
+  h.savePrefs({ cm360: 29.07, dpi: 850 });
+  h.setGamePrefs('multi-path', { calibration: null, manualSens: 3.700601 });
+  near(h.shareGame('multi-path').profile.yaw, M.yawFromMeasurement(3.700601, 850, 29.07), 1e-9);
+  // an uncalibrated game can still be shared, with a warning that friends must set it up
+  E.saveCustomGame({ name: 'No Cal', sensFile: tf, sensKey: 'sensitivity' }, m.st);
+  const nc = h.shareGame('no-cal');
+  assert.ok(nc.ok && !('yaw' in nc.profile) && /isn't calibrated/.test(nc.warnings[0]));
   // paths outside the known places can't be shared
   E.saveCustomGame({ name: 'Odd Place', sensFile: path.join(m.root, 'Games', 'odd.ini'), sensKey: 's' }, m.st);
   assert.ok(!h.shareGame('odd-place').ok);
@@ -412,6 +423,27 @@ test('community: library games show up, your own games override them', () => {
   E.saveCustomGame({ id: 'shared-one', name: 'Mine', manual: true }, m.st);
   const mine = E.allGames(m.st).find((g) => g.id === 'shared-one');
   assert.ok(mine.custom && !mine.community && mine.name === 'Mine');
+});
+
+test('community: a shared yaw sets the game up with no calibration, your own calibration wins', () => {
+  const m = fakeMachine();
+  const yaw = M.yawFromMeasurement(3.2, 800, 30);
+  fs.writeFileSync(m.st.communityFile, JSON.stringify({ games: [
+    { id: 'fov-game', name: 'Fov Game', apply: 'manual', files: {}, sens: { range: [1, 30] }, fov: { type: 'h169', range: [70, 130], decimals: 0 }, yaw, calFov: 103, fovAffectsSens: true },
+  ] }));
+  const g = E.allGames(m.st).find((x) => x.id === 'fov-game');
+  const prefs = { ...m.st.getPrefs(), cm360: 30, dpi: 800, aspect: 16 / 9, fov: { enabled: true, value: 103, type: 'h169' } };
+  let v = E.computeValues(g, prefs);
+  near(v.sens, 3.2, 1e-6);
+  assert.strictEqual(v.source, 'shared yaw');
+  assert.deepStrictEqual(v.warnings, []);
+  // a different FOV than the shared yaw was calibrated at -> warning
+  v = E.computeValues(g, { ...prefs, fov: { ...prefs.fov, value: 110 } });
+  assert.ok(v.warnings.some((w) => /calibrated at FOV 103/.test(w)), v.warnings.join());
+  // your own calibration replaces the shared yaw
+  v = E.computeValues(g, { ...prefs, games: { 'fov-game': { calibration: { sens: 5, cm360: 30, dpi: 800, fov: 103 } } } });
+  near(v.sens, 5, 1e-6);
+  assert.strictEqual(v.source, 'calibrated');
 });
 
 test('community: the repo library is valid and up to date', () => {
