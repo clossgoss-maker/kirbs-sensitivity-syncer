@@ -1,6 +1,6 @@
 name: Release
-# Push a tag like v0.2.0 to build the Windows installer and publish it as a GitHub Release.
-# Installed copies of the app find the new release and update themselves.
+# Push a tag like v0.2.0 (npm version patch && git push --follow-tags) to build the Windows installer
+# and publish it as a GitHub Release. Installed copies of the app find it and update themselves.
 on:
   push:
     tags: ["v*"]
@@ -11,6 +11,9 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -20,7 +23,13 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: node scripts/build-community.js
-      - name: Build installer and publish the release
+      # Create the release as a draft first: if electron-builder creates it, its parallel uploads can
+      # race and make two releases for the same tag, which breaks auto-update.
+      - name: Create draft release
+        shell: bash
+        run: gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TAG" --generate-notes
+      - name: Build installer and upload it to the draft
         run: npx electron-builder --win nsis --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the release
+        shell: bash
+        run: gh release edit "$TAG" --draft=false --latest
