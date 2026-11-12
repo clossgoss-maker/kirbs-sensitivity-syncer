@@ -1,0 +1,37 @@
+{
+  "_readme": "Known engine yaw values for the Add a game screen. Only widely documented engine constants belong here. yaw = degrees turned per mouse count at sensitivity 1. fovType is optional and only set where the engine's FOV number is well known.",
+  "presets": [
+    {
+      "id": "source",
+      "name": "Source / Source 2",
+      "yaw": 0.022,
+      "fovType": "h43",
+      "examples": "Counter-Strike, Team Fortress 2, Apex Legends, Titanfall, Half-Life, Left 4 Dead, Portal"
+    },
+    {
+      "id": "quake",
+      "name": "Quake / id Tech 3",
+      "yaw": 0.022,
+      "examples": "Quake Live, Quake III, older Call of Duty (CoD 4, MW2 2009, Black Ops 1)"
+    },
+    {
+      "id": "overwatch",
+      "name": "Overwatch",
+      "yaw": 0.0066,
+      "fovType": "h169",
+      "examples": "Overwatch, Overwatch 2"
+    },
+    {
+      "id": "cod-modern",
+      "name": "Call of Duty (2019 and later)",
+      "yaw": 0.0066,
+      "examples": "Modern Warfare 2019 onward, Warzone, Black Ops Cold War and later"
+    },
+    {
+      "id": "valorant",
+      "name": "Valorant",
+      "yaw": 0.07,
+      "examples": "Valorant"
+    }
+  ]
+}

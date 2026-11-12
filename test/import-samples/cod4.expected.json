@@ -1,0 +1,20 @@
+{
+  "name": "Call of Duty 4: Modern Warfare",
+  "aim": "Hipfire",
+  "kind": "file",
+  "paths": [
+    { "label": "Single-player", "pattern": "{STEAMLIB}/steamapps/common/*/players2/config.cfg", "unresolved": null },
+    { "label": "Multiplayer", "pattern": "{STEAMLIB}/steamapps/common/*/players2/config_mp.cfg", "unresolved": null }
+  ],
+  "sens": { "name": "0xBC3E3CAE", "min": 0.01, "def": 5, "max": 30, "format": "seta", "inFile": true },
+  "multipliers": [],
+  "fov": { "name": "0x8572B2C7", "min": 65, "def": 65, "max": 90, "format": "seta", "decimals": 0 },
+  "fovType": "h43",
+  "engine": "IW 7.0",
+  "preset": null,
+  "exact": false,
+  "fovAffectsSens": true,
+  "fovAffectsHow": "Monitor Distance Vertical 0%",
+  "mentionedPaths": [],
+  "unknown": []
+}

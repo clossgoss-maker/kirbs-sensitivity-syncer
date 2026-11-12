@@ -1,0 +1,40 @@
+{
+  "games": [
+    {
+      "id": "cyberpunk-2077",
+      "name": "Cyberpunk 2077",
+      "apply": "file",
+      "files": {
+        "sens": {
+          "paths": [
+            "%LOCALAPPDATA%/CD Projekt Red/Cyberpunk 2077/UserSettings.json"
+          ]
+        }
+      },
+      "sens": {
+        "range": [
+          1,
+          30
+        ],
+        "decimals": 6,
+        "file": "sens",
+        "keys": [
+          "FPP_MouseX",
+          "FPP_MouseY"
+        ]
+      },
+      "fov": {
+        "type": "h169",
+        "range": [
+          70,
+          130
+        ],
+        "decimals": 0,
+        "file": "sens",
+        "key": "FieldOfView"
+      },
+      "process": [],
+      "notes": "Close the game before applying: it rewrites UserSettings.json when it exits. Sets horizontal and vertical together."
+    }
+  ]
+}

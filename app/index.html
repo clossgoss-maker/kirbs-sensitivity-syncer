@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Kirb's Sensitivity Syncer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <!-- Kirby, head tilted, mid "huh?" -->
+      <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="48" fill="var(--badge)" />
+        <circle cx="50" cy="50" r="48" fill="none" stroke="var(--accent)" stroke-width="3" />
+        <g transform="rotate(-9 50 54)">
+          <!-- floppy ears -->
+          <path d="M27 27 C13 27 7 45 10 62 C12 72 21 72 25 62 C28 53 32 38 27 27Z" fill="#3b2017" />
+          <path d="M73 27 C87 27 93 45 90 62 C88 72 79 72 75 62 C72 53 68 38 73 27Z" fill="#3b2017" />
+          <!-- head + fluffy top -->
+          <path d="M50 19 C69 19 79 35 78 53 C77 71 66 85 50 87 C34 85 23 71 22 53 C21 35 31 19 50 19Z" fill="#5a3222" />
+          <path d="M36 24 C36 17 42 15 44 20 C45 13 53 12 55 19 C57 14 64 16 63 24 Z" fill="#5a3222" />
+          <path d="M44 20 C45 16 48 15 50 17" stroke="#6a3d2b" stroke-width="1.5" fill="none" stroke-linecap="round" />
+          <ellipse cx="50" cy="38" rx="17" ry="10" fill="#6a3d2b" />
+          <!-- white blaze down to a frosty muzzle -->
+          <path d="M48.5 36 C49.5 46 47.5 55 45.5 61 L54.5 61 C52.5 55 50.5 46 51.5 36 Z" fill="#efe4d4" />
+          <ellipse cx="50" cy="71" rx="15" ry="11.5" fill="#e6d9c8" />
+          <ellipse cx="50" cy="73" rx="12" ry="8" fill="#d8c8b6" opacity=".6" />
+          <!-- tan eyebrows -->
+          <ellipse cx="37" cy="42" rx="3.4" ry="1.8" fill="#9a6a4a" />
+          <ellipse cx="63" cy="42" rx="3.4" ry="1.8" fill="#9a6a4a" />
+          <!-- amber eyes -->
+          <circle cx="37" cy="50" r="5.4" fill="#c7852f" />
+          <circle cx="63" cy="50" r="5.4" fill="#c7852f" />
+          <circle cx="37.6" cy="50.6" r="3" fill="#1c0e09" />
+          <circle cx="63.6" cy="50.6" r="3" fill="#1c0e09" />
+          <circle cx="38.8" cy="48.8" r="1.2" fill="#fff" />
+          <circle cx="64.8" cy="48.8" r="1.2" fill="#fff" />
+          <!-- big brown-pink nose -->
+          <path d="M42.5 64.5 C42.5 60 57.5 60 57.5 64.5 C57.5 69.5 53.5 71.5 50 71.5 C46.5 71.5 42.5 69.5 42.5 64.5Z" fill="#6e403b" />
+          <ellipse cx="46.8" cy="65.6" rx="1.5" ry="1" fill="#3a1f1b" />
+          <ellipse cx="53.2" cy="65.6" rx="1.5" ry="1" fill="#3a1f1b" />
+          <ellipse cx="48" cy="62.6" rx="2.6" ry="1.1" fill="#9c6a64" opacity=".8" />
+          <!-- mouth + a little blep -->
+          <path d="M50 71.5 V74.5 M50 74.5 C48 76.5 45 76.5 43.5 74.5 M50 74.5 C52 76.5 55 76.5 56.5 74.5" stroke="#7d5a4c" stroke-width="1.3" fill="none" stroke-linecap="round" />
+          <path d="M48 75.6 C48 80 52 80 52 75.6 Z" fill="#e48a86" />
+        </g>
+      </svg>
+      <div>
+        <h1>Kirb's Sensitivity Syncer</h1>
+        <p class="sub">Same aim in every game. Sniffed out, synced up, good boy approved.</p>
+      </div>
+    </div>
+    <a href="#" id="msLink" class="ext">mouse-sensitivity.com ↗</a>
+  </header>
+
+  <section class="aim card">
+    <div class="field">
+      <label for="cm360">cm / 360°</label>
+      <input id="cm360" type="number" step="0.01" min="1" />
+    </div>
+    <div class="field">
+      <label for="dpi">Mouse DPI</label>
+      <input id="dpi" type="number" step="50" min="50" />
+    </div>
+    <div class="field">
+      <label for="aspect">Monitor</label>
+      <select id="aspect">
+        <option value="1.7778">16:9</option>
+        <option value="1.6">16:10</option>
+        <option value="2.3333">21:9</option>
+        <option value="3.5556">32:9</option>
+        <option value="1.3333">4:3</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="field fovfield">
+      <label class="toggle"><input id="fovOn" type="checkbox" /> <span>Match FOV</span></label>
+      <div class="fovrow">
+        <input id="fovValue" type="number" step="0.1" min="30" max="170" />
+        <select id="fovType">
+          <option value="h169">horizontal, 16:9</option>
+          <option value="hnative">horizontal, my monitor</option>
+          <option value="h43">horizontal, 4:3</option>
+          <option value="v">vertical</option>
+        </select>
+      </div>
+    </div>
+    <div class="saved" id="savedNote">Saved</div>
+  </section>
+
+  <section class="toolbar">
+    <button id="applyAll" class="primary">Apply to all found games</button>
+    <button id="addGame">+ Add a game</button>
+    <button id="refresh" class="ghost">Rescan</button>
+    <label class="toggle notestoggle"><input id="notesOn" type="checkbox" /> <span>Show game notes</span></label>
+    <span class="hint" id="summary"></span>
+  </section>
+
+  <section id="games" class="games"></section>
+
+  <section id="log" class="log hidden"></section>
+
+  <!-- header bar for the mouse-sensitivity.com side panel (the site itself is drawn below it by the app) -->
+  <div id="sidebar" class="sidebar hidden">
+    <button class="small ghost" data-nav="back" title="Back">←</button>
+    <button class="small ghost" data-nav="reload" title="Reload">⟳</button>
+    <button class="small ghost" data-nav="home" title="Calculator home">⌂</button>
+    <span class="sidetitle">mouse-sensitivity.com</span>
+    <button class="small ghost" data-nav="external" title="Open in your browser">↗</button>
+    <button class="small" id="sideClose" title="Close the panel">✕</button>
+  </div>
+
+  <!-- modal shell -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="sheet">
+      <button class="close" id="modalClose" aria-label="Close">×</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

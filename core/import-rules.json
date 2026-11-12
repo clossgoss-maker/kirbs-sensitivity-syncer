@@ -1,0 +1,62 @@
+{
+  "_readme": "Rules for reading the Game Info box copied from mouse-sensitivity.com (select the box, Ctrl+C, paste into Add a game). When a paste isn't understood, add a rule here and a sample to test/import-samples/, rather than changing code. Regexes are case-insensitive. RANGE in a value format stands for 'min | default | max'.",
+
+  "sections": [
+    { "id": "location",   "match": "^(config files?|location)$" },
+    { "id": "sensHeader", "match": "^sensitivity$" },
+    { "id": "sens",       "match": "^sensitivity \\d+$" },
+    { "id": "multiplier", "match": "^multiplier \\d+$" },
+    { "id": "notes",      "match": "^notes$" },
+    { "id": "fov",        "match": "^fov$" },
+    { "id": "fovType",    "match": "^fov type$" },
+    { "id": "fovNotes",   "match": "^fov notes$" },
+    { "id": "engine",     "match": "^engine$" },
+    { "id": "affected",   "match": "^affected by$" },
+    { "id": "ignore",     "match": "^added$" }
+  ],
+
+  "_fovAffects": "The 'Affected by' line loses the site's check/cross icons when copied. When FOV changes the sensitivity, the site adds how, e.g. 'FOV: (Monitor Distance Vertical 0%)'. No note means unknown, not 'no'.",
+  "fovAffects": "fov:\\s*\\(([^)]+)\\)",
+
+  "skipLines": ["^\\(minimum \\| default \\| maximum\\)$"],
+
+  "range": "(-?\\d*\\.?\\d+)\\s*\\|\\s*(-?\\d*\\.?\\d+)\\s*\\|\\s*(-?\\d*\\.?\\d+)\\s*(?:°|%)?",
+
+  "valueFormats": [
+    { "id": "seta",   "inFile": true,  "re": "^(?:seta?|setu|sets)\\s+(\\S+)\\s+\"RANGE\"$" },
+    { "id": "quoted", "inFile": true,  "re": "^\"([^\"]+)\"\\s+\"RANGE\"$" },
+    { "id": "ini",    "inFile": true,  "re": "^([\\w.\\/\\[\\]-]+)\\s*=\\s*\"?RANGE\"?$" },
+    { "id": "label",  "inFile": false, "re": "^(.+?)\\s+RANGE$" }
+  ],
+
+  "inGame": "^settings\\b",
+
+  "pathTokens": {
+    "[GAME FOLDER]": "{STEAMLIB}/steamapps/common/*",
+    "[STEAM FOLDER]": "{STEAM}",
+    "%USERPROFILE%\\Documents": "{DOCUMENTS}",
+    "%USERPROFILE%\\Saved Games": "{SAVEDGAMES}"
+  },
+  "pathStart": "(?:\\[[A-Z ]+\\]|%[A-Z_]+%|[A-Z]:\\\\)",
+
+  "fovTypes": [
+    { "match": "^horizontal degrees \\(4:3", "type": "h43" },
+    { "match": "^horizontal degrees \\(16:9", "type": "h169" },
+    { "match": "^vertical degrees", "type": "v" }
+  ],
+
+  "fovLikeLabel": "\\b(fov|field of view)\\b",
+  "sensLikeLabel": "\\bsens",
+
+  "exactHints": [
+    "combination of in-game fov",
+    "sensitivity (also )?depends on (the )?fov"
+  ],
+
+  "engines": {
+    "source": "source",
+    "source 2": "source",
+    "id tech 3": "quake",
+    "quake 3": "quake"
+  }
+}

@@ -1,0 +1,26 @@
+Deadlock - All
+Location
+In-game:
+Settings -> Options
+Sensitivity
+(Minimum | Default | Maximum)
+Sensitivity 1:
+Camera FOV 75 | 90 | 90
+Multiplier 1:
+Mouse Sensitivity 0.05 | 1.25 | 8
+Notes:
+The sensitivity slider is not accurate, expect some discrepancy. Use the config file for best accuracy.
+All aims use the same sensitivity setting, choose the sensitivity for the aim you prefer to be matched.
+This calculation uses a combination of in-game FOV (Camera FOV) and config file FOV (r_aspectratio), enter your in-game FOV in the Sensitivity 1 field.
+FOV:
+"r_aspectratio" "1 | 1.777778 | 10"
+FOV Type:
+Multiplier
+FOV Notes:
+Add the FOV variable to the ConVars section of the file [GAME FOLDER]\game\citadel\gameinfo.gi, one line above "rate".
+Affected by:
+FOV:  | Windows Pointer Speed:
+Engine:
+Source 2
+Added:
+November 24 2025 | Updated: September 25 2026

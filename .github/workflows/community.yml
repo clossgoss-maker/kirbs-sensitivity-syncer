@@ -1,0 +1,47 @@
+name: Add shared game
+# When a maintainer labels a "new-game" issue "approved", validate the profile in it and open a
+# pull request that adds it to the shared library. Merging the PR publishes it to every app.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  add:
+    if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'new-game')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # the issue text is untrusted: it's only read by the script, which validates it strictly
+      - name: Validate and add the game
+        id: add
+        run: node scripts/community-from-issue.js "$GITHUB_EVENT_PATH"
+      - name: Open a pull request
+        if: success()
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: community/issue-${{ github.event.issue.number }}
+          commit-message: "Add shared game: ${{ steps.add.outputs.id }}"
+          title: "Add shared game: ${{ steps.add.outputs.name }}"
+          body: |
+            Adds the game shared in #${{ github.event.issue.number }}.
+            Closes #${{ github.event.issue.number }}
+          add-paths: |
+            community/games/*.json
+            community/games.json
+      - name: Explain what went wrong
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.issue.number }}
+          ERROR: ${{ steps.add.outputs.error }}
+        run: |
+          printf 'Kirb couldn'"'"'t add this game automatically:\n\n```\n%s\n```\n' "$ERROR" > comment.md
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body-file comment.md

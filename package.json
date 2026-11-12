@@ -1,0 +1,60 @@
+{
+  "name": "sensync",
+  "productName": "Kirb's Sensitivity Syncer",
+  "version": "0.1.0",
+  "description": "Kirb's Sensitivity Syncer: set your cm/360 and FOV once and write it into any game's config file.",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "electron .",
+    "cli": "node cli.js",
+    "test": "node --test test/core.test.js",
+    "community": "node scripts/build-community.js",
+    "dist": "node scripts/build-community.js && electron-builder --win nsis"
+  },
+  "license": "MIT",
+  "author": "clossgoss-maker",
+  "homepage": "https://github.com/clossgoss-maker/kirbs-sensitivity-syncer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clossgoss-maker/kirbs-sensitivity-syncer.git"
+  },
+  "kirb": {
+    "repo": "clossgoss-maker/kirbs-sensitivity-syncer"
+  },
+  "devDependencies": {
+    "electron": "^45.3.0",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  },
+  "build": {
+    "appId": "com.kirbs.sensitivitysyncer",
+    "productName": "Kirb's Sensitivity Syncer",
+    "files": [
+      "app/**",
+      "core/**",
+      "community/games.json",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "app/assets/kirby-icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "KirbsSensitivitySyncer-Setup-${version}.${ext}",
+      "shortcutName": "Kirb's Sensitivity Syncer",
+      "uninstallDisplayName": "Kirb's Sensitivity Syncer"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "clossgoss-maker",
+        "repo": "kirbs-sensitivity-syncer",
+        "releaseType": "release"
+      }
+    ]
+  }
+}

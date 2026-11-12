@@ -1,0 +1,19 @@
+{
+  "name": "Deadlock",
+  "aim": "All",
+  "kind": "ingame",
+  "paths": [],
+  "inGame": "Settings -> Options",
+  "sens": { "name": "Mouse Sensitivity", "min": 0.05, "def": 1.25, "max": 8, "format": "label" },
+  "multipliers": [],
+  "fov": { "name": "r_aspectratio", "format": "quoted" },
+  "fovType": null,
+  "engine": "Source 2",
+  "preset": null,
+  "exact": true,
+  "fovAffectsSens": null,
+  "mentionedPaths": [
+    { "raw": "[GAME FOLDER]\\game\\citadel\\gameinfo.gi", "pattern": "{STEAMLIB}/steamapps/common/*/game/citadel/gameinfo.gi" }
+  ],
+  "unknown": []
+}

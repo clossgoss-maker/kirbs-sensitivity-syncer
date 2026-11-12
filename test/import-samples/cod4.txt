@@ -1,0 +1,23 @@
+Call of Duty 4: Modern Warfare - Hipfire
+Config File
+Single-player:
+[GAME FOLDER]\players2\config.cfg
+Multiplayer:
+[GAME FOLDER]\players2\config_mp.cfg
+Sensitivity
+(Minimum | Default | Maximum)
+Sensitivity 1:
+seta 0xBC3E3CAE "0.01 | 5 | 30"
+Notes:
+Disable acceleration by setting Smooth Mouse - No in the Look options.
+FOV:
+seta 0x8572B2C7 "65 | 65 | 90"
+FOV Type:
+Horizontal Degrees (4:3 Base)
+FOV Notes:
+Set the FOV in the config file.
+In single-player the FOV can only be changed with 3rd party tools.
+Affected by:
+FOV:  (Monitor Distance Vertical 0%) | Windows Pointer Speed:
+Engine:
+IW 7.0

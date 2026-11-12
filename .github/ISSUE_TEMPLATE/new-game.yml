@@ -1,0 +1,26 @@
+name: Share a game
+description: Add a game's setup to the shared library (the app fills this in for you with "Share with everyone…").
+title: "New game: "
+labels: ["new-game"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing! This adds the game's **setup** (where its config file is and which settings to change) so everyone gets it.
+        Calibration numbers aren't shared: everyone calibrates once with the mouse-sensitivity.com panel in the app.
+        A maintainer checks it, labels it **approved**, and it's added automatically.
+  - type: textarea
+    id: profile
+    attributes:
+      label: Game profile
+      description: Filled in by the app. Please don't edit it by hand unless you know what you're changing.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else? (optional)
+      description: Store version (Steam, Epic, Xbox…), anything odd you noticed.
+    validations:
+      required: false

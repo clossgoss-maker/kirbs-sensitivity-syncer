@@ -1,0 +1,32 @@
+Halo Infinite - All
+Location
+In-game:
+Settings -> Keyboard/Mouse
+Sensitivity
+(Minimum | Default | Maximum)
+Sensitivity 1:
+Sensitivity Scale (Horizontal) 0.1 | 1 | 2
+Multiplier 1:
+Mouse Sensitivity 0.1 | 2.2 | 10
+Multiplier 2:
+Sensitivity Scale 0.1 | 1 | 2
+FOV:
+Field of View 65 | 78 | 120°
+FOV Type:
+Multiplier
+FOV Notes:
+Set the FOV in the video settings.
+If the FOV you set in-game gets changed to a different value, you can set it in the config file instead. The parameter is
+"spec_control_field_of_view": {
+    "version": 0,
+    "value": XXX
+},
+(Replace XXX with your FOV), and the he config file is
+%LOCALAPPDATA%\HaloInfinite\Settings\SpecControlSettings.json for Steam,
+%LOCALAPPDATA%\Packages\Microsoft.254428597CFE2_8wekyb3d8bbwe\LocalCache\Local\HaloInfinite\Settings\SpecControlSettings.json for Microsoft Store.
+Affected by:
+FOV:  | Windows Pointer Speed:
+Engine:
+Slipspace Engine
+Added:
+October 1 2021 | Updated: March 9 2023

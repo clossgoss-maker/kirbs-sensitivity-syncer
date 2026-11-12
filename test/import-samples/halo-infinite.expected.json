@@ -1,0 +1,24 @@
+{
+  "name": "Halo Infinite",
+  "aim": "All",
+  "kind": "ingame",
+  "paths": [],
+  "inGame": "Settings -> Keyboard/Mouse",
+  "sens": { "name": "Sensitivity Scale (Horizontal)", "min": 0.1, "def": 1, "max": 2, "format": "label", "inFile": false },
+  "multipliers": [
+    { "name": "Mouse Sensitivity", "def": 2.2 },
+    { "name": "Sensitivity Scale", "def": 1 }
+  ],
+  "fov": { "name": "Field of View", "min": 65, "def": 78, "max": 120 },
+  "fovType": null,
+  "fovTypeText": "Multiplier",
+  "engine": "Slipspace Engine",
+  "preset": null,
+  "exact": false,
+  "fovAffectsSens": null,
+  "mentionedPaths": [
+    { "pattern": "%LOCALAPPDATA%/HaloInfinite/Settings/SpecControlSettings.json" },
+    { "pattern": "%LOCALAPPDATA%/Packages/Microsoft.254428597CFE2_8wekyb3d8bbwe/LocalCache/Local/HaloInfinite/Settings/SpecControlSettings.json" }
+  ],
+  "unknown": []
+}

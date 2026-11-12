@@ -1,0 +1,123 @@
+{
+  "_readme": "Built-in game profiles. Don't edit this file: games you add in the app are saved to games.user.json in the app's data folder and override these by id. Path tokens: {STEAM} {STEAMLIB} {DOCUMENTS} {SAVEDGAMES} %ENVVAR% and * wildcards. FOV types: v (vertical), h43 (horizontal at 4:3), h169 (horizontal at 16:9), hnative (horizontal at your monitor's aspect).",
+  "games": [
+    {
+      "id": "cs2",
+      "name": "Counter-Strike 2",
+      "process": ["cs2.exe"],
+      "yaw": 0.022,
+      "apply": "file",
+      "files": {
+        "main": {
+          "paths": [
+            "{STEAM}/userdata/*/730/local/cfg/cs2_user_convars_0_slot0.vcfg",
+            "{STEAM}/userdata/*/730/remote/cfg/cs2_user_convars_0_slot0.vcfg"
+          ],
+          "editAll": true
+        }
+      },
+      "sens": { "file": "main", "keys": ["sensitivity"], "insert": "vcfg", "range": [0.0001, 8] },
+      "fov": null,
+      "fixedFov": { "value": 90, "type": "h43" },
+      "notes": "CS2's FOV is fixed (90 at 4:3). If Steam Cloud puts your old sensitivity back, set it once in-game too, or add sensitivity to an autoexec."
+    },
+    {
+      "id": "apex",
+      "name": "Apex Legends",
+      "process": ["r5apex.exe", "r5apex_dx12.exe"],
+      "yaw": 0.022,
+      "apply": "file",
+      "files": {
+        "settings": { "paths": ["{SAVEDGAMES}/Respawn/Apex/local/settings.cfg"] },
+        "profile": { "paths": ["{SAVEDGAMES}/Respawn/Apex/profile/profile.cfg"] }
+      },
+      "sens": { "file": "settings", "keys": ["mouse_sensitivity"], "insert": "source", "range": [0.2, 20] },
+      "fov": {
+        "file": "profile",
+        "key": "cl_fovScale",
+        "type": "h43",
+        "insert": "source",
+        "map": { "kind": "linear", "fov": [70, 110], "value": [1.0, 1.55] },
+        "range": [70, 120],
+        "decimals": 5
+      },
+      "notes": "Apex's FOV slider is measured at 4:3 (70 to 110 in the menu; up to 120 through the config). Hipfire sensitivity doesn't change with FOV."
+    },
+    {
+      "id": "tf2",
+      "name": "Team Fortress 2",
+      "process": ["tf_win64.exe", "tf.exe", "hl2.exe"],
+      "yaw": 0.022,
+      "apply": "file",
+      "files": {
+        "main": {
+          "paths": [
+            "{STEAMLIB}/steamapps/common/Team Fortress 2/tf/cfg/config.cfg",
+            "{STEAM}/userdata/*/440/remote/cfg/config.cfg"
+          ],
+          "editAll": true
+        }
+      },
+      "sens": { "file": "main", "keys": ["sensitivity"], "insert": "source" },
+      "fov": { "file": "main", "key": "fov_desired", "type": "h43", "insert": "source", "range": [75, 90], "decimals": 0 },
+      "notes": "TF2 caps fov_desired at 90 (4:3 horizontal)."
+    },
+    {
+      "id": "r6siege",
+      "name": "Rainbow Six Siege",
+      "process": ["RainbowSix.exe", "RainbowSix_Vulkan.exe", "RainbowSix_DX11.exe"],
+      "yaw": 14.32394,
+      "apply": "file",
+      "files": {
+        "main": { "paths": ["{DOCUMENTS}/My Games/Rainbow Six - Siege/*/GameSettings.ini"], "editAll": true }
+      },
+      "sens": {
+        "file": "main",
+        "keys": ["MouseSensitivityMultiplierUnit"],
+        "section": "INPUT",
+        "also": { "MouseYawSensitivity": 50, "MousePitchSensitivity": 50 },
+        "range": [0.00001, 1]
+      },
+      "read": { "scaleBy": { "MouseYawSensitivity": 50 } },
+      "fov": { "file": "main", "key": "DefaultFOV", "type": "v", "range": [60, 90], "decimals": 4 },
+      "notes": "Sets the Yaw/Pitch sliders to 50 and puts your sensitivity in MouseSensitivityMultiplierUnit, for finer steps than the slider allows. Scale is derived from Siege's 0.00572958 yaw at the default 0.02 multiplier. Check it once against mouse-sensitivity.com."
+    },
+    {
+      "id": "thefinals",
+      "name": "THE FINALS",
+      "process": ["Discovery.exe"],
+      "yaw": 0.001,
+      "apply": "manual",
+      "files": {
+        "save": { "paths": ["%LOCALAPPDATA%/Discovery/Saved/SaveGames/EmbarkOptionSaveGame.sav"], "format": "uesave-strings" }
+      },
+      "read": { "file": "save", "sensKey": "GameplayOption.Controls.MouseSensitivity", "fovKey": "GameplayOption.Camera.FOV" },
+      "sens": { "range": [1, 100], "decimals": 1 },
+      "fov": null,
+      "notes": "Settings live in a binary save file, so the app reads them but doesn't write them. Type the value in-game. Yaw 0.001 per slider point."
+    },
+    {
+      "id": "valorant",
+      "name": "Valorant",
+      "process": ["VALORANT-Win64-Shipping.exe"],
+      "yaw": 0.07,
+      "apply": "manual",
+      "files": {},
+      "sens": { "range": [0.001, 10] },
+      "fov": null,
+      "fixedFov": { "value": 103, "type": "h169" },
+      "notes": "Valorant saves settings to your Riot account and overwrites local files, so the app only works out the number for you to type in. Its FOV is fixed at 103."
+    },
+    {
+      "id": "ow2",
+      "name": "Overwatch 2",
+      "process": ["Overwatch.exe"],
+      "yaw": 0.0066,
+      "apply": "manual",
+      "files": {},
+      "sens": { "range": [1, 100], "decimals": 2 },
+      "fov": { "type": "h169", "range": [80, 103], "decimals": 0 },
+      "notes": "Overwatch saves settings to your Battle.net account, so type these values in-game."
+    }
+  ]
+}
