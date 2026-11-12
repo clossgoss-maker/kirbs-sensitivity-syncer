@@ -15,8 +15,8 @@ jobs:
     if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'new-game')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       # the issue text is untrusted: it's only read by the script, which validates it strictly
