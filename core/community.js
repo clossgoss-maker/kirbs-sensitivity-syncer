@@ -168,11 +168,50 @@ function shareableProfile(game, roots, { note, presets = [], yaw, calFov } = {})
   return { ok: !errors.length && v.ok, errors: [...errors, ...v.errors], profile: v.profile };
 }
 
+// ---------------- audit trail ----------------
+// community/history.json: one entry per change to the library, newest last.
+//   { date: "2026-11-11", id, name, action: "added"|"updated"|"removed", yaw, calFov?, by?, issue? }
+const ACTIONS = ['added', 'updated', 'removed'];
+function validateHistoryEntry(e) {
+  const errors = [];
+  if (!e || typeof e !== 'object') return { ok: false, errors: ['not an object'] };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date || '')) errors.push('date must be YYYY-MM-DD');
+  if (!ID_RE.test(e.id || '')) errors.push('bad id');
+  if (!CLEAN_TEXT(e.name, 80)) errors.push('bad name');
+  if (!ACTIONS.includes(e.action)) errors.push(`action must be ${ACTIONS.join('/')}`);
+  if (e.yaw != null && !(typeof e.yaw === 'number' && e.yaw > 0)) errors.push('bad yaw');
+  if (e.calFov != null && typeof e.calFov !== 'number') errors.push('bad calFov');
+  if (e.by != null && !/^[A-Za-z0-9-]{1,39}$/.test(e.by)) errors.push('bad GitHub username');
+  if (e.issue != null && !Number.isInteger(e.issue)) errors.push('bad issue number');
+  if (e.note != null && !CLEAN_TEXT(e.note, 200)) errors.push('bad note');
+  return { ok: !errors.length, errors };
+}
+
+/** Each current game's latest history entry must match its yaw, so the trail can't drift from the data. */
+function checkHistory(games, history) {
+  const problems = [];
+  history.forEach((e, i) => { const v = validateHistoryEntry(e); if (!v.ok) problems.push(`history[${i}]: ${v.errors.join('; ')}`); });
+  for (const g of games) {
+    const last = history.filter((e) => e.id === g.id && e.action !== 'removed').pop();
+    if (!last) { problems.push(`${g.id}: no history entry (add one to community/history.json)`); continue; }
+    if ((last.yaw ?? null) !== (g.yaw ?? null)) problems.push(`${g.id}: yaw ${g.yaw} doesn't match its latest history entry (${last.yaw}); add an "updated" entry`);
+  }
+  return problems;
+}
+
+const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
+const libraryData = (cacheFile) => (cacheFile && readJson(cacheFile)) || readJson(BUNDLED) || { games: [], history: [] };
+
 /** Bundled library, then the cached download (newer) if there is one. */
 function loadLibrary(cacheFile, presets) {
-  const read = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
-  const raw = (cacheFile && read(cacheFile)) || read(BUNDLED) || { games: [] };
+  const raw = libraryData(cacheFile);
   return (Array.isArray(raw.games) ? raw.games : []).map((g) => validateProfile(g, presets)).filter((v) => v.ok).map((v) => v.profile);
+}
+
+/** The library's audit trail, oldest first. */
+function loadHistory(cacheFile) {
+  const raw = libraryData(cacheFile);
+  return (Array.isArray(raw.history) ? raw.history : []).filter((e) => validateHistoryEntry(e).ok);
 }
 
 /** Download the latest library from GitHub and cache it. Returns how many games it has, or null. */
@@ -183,7 +222,8 @@ async function refreshLibrary(cacheFile, presets, fetchImpl = globalThis.fetch) 
   const data = await res.json();
   if (!data || !Array.isArray(data.games)) return null;
   const valid = data.games.map((g) => validateProfile(g, presets)).filter((v) => v.ok).map((v) => v.profile);
-  fs.writeFileSync(cacheFile, JSON.stringify({ games: valid }, null, 2));
+  const history = (Array.isArray(data.history) ? data.history : []).filter((e) => validateHistoryEntry(e).ok);
+  fs.writeFileSync(cacheFile, JSON.stringify({ games: valid, history }, null, 2));
   return valid.length;
 }
 
@@ -198,4 +238,7 @@ function shareUrl(profile) {
   return `https://github.com/${REPO}/issues/new?${q}`;
 }
 
-module.exports = { validateProfile, shareableProfile, loadLibrary, refreshLibrary, shareUrl, REPO, LIBRARY_URL, ROOTS };
+module.exports = {
+  validateProfile, shareableProfile, loadLibrary, loadHistory, refreshLibrary, shareUrl,
+  validateHistoryEntry, checkHistory, REPO, LIBRARY_URL, ROOTS,
+};

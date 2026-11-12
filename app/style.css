@@ -95,9 +95,12 @@ button.link { background: none; border: none; padding: 0; color: var(--mute); te
 .game:hover { border-left-color: var(--accent); }
 .game .name { font: 600 16px var(--serif); }
 .game .note { color: var(--mute); font-size: 12px; margin-top: 2px; max-width: 520px; }
-html.hide-notes .game .note { display: none; }
-html.hide-notes .game { padding-top: 10px; padding-bottom: 10px; }
-.notestoggle { margin-left: 6px; color: var(--mute) !important; }
+.notebtn { background: none; border: none; padding: 0 0 0 8px; color: var(--mute); font: 12px var(--sans); cursor: pointer; box-shadow: none; }
+.notebtn:hover:not(:disabled) { background: none; color: var(--accent); }
+.keytable.history td { font-size: 12.5px; }
+.keytable.history tr.hnote td { color: var(--mute); font-size: 12px; border-bottom: 1px solid var(--line); padding-top: 0; }
+.keytable.history tr:has(+ tr.hnote) td { border-bottom: none; }
+.tag.shared { color: var(--number); border-color: rgba(241, 191, 91, .5); }
 .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 9px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; background: rgba(0, 0, 0, .15); }
 .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .chip.ok { color: var(--ok); }
@@ -107,6 +110,15 @@ html.hide-notes .game { padding-top: 10px; padding-bottom: 10px; }
 .actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
 .tag { font-size: 11px; color: var(--mute); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; font-weight: 400; font-family: var(--sans); }
 .warns { grid-column: 1 / -1; color: var(--warn); font-size: 12px; margin-top: -4px; }
+
+/* Narrow list (small window, or the mouse-sensitivity.com panel open): name + status on top,
+   values below, buttons under that, so nothing runs off the edge */
+.games { container-type: inline-size; }
+@container (max-width: 860px) {
+  .game { grid-template-columns: minmax(0, 1fr) auto; row-gap: 10px; }
+  .game .sync { grid-column: 1 / -1; }
+  .game .actions { grid-column: 1 / -1; justify-content: flex-start; }
+}
 
 /* "Currently set to" / "To match … set to" block */
 .sync { display: grid; grid-template-columns: auto; row-gap: 1px; font-family: var(--mono); font-size: 13px; }
@@ -128,6 +140,7 @@ html.hide-notes .game { padding-top: 10px; padding-bottom: 10px; }
 .sheet h2 { margin: 0 0 4px; font: 600 21px var(--serif); }
 .sheet h3 { margin: 22px 0 8px; font-size: 12.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--accent); }
 .sheet p { margin: 6px 0; color: var(--mute); }
+.sheet .mute { color: var(--mute); }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .row input[type=text] { flex: 1; min-width: 240px; }
 .tabs { display: flex; gap: 4px; margin: 8px 0 12px; flex-wrap: wrap; }

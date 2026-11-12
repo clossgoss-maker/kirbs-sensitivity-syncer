@@ -446,6 +446,30 @@ test('community: a shared yaw sets the game up with no calibration, your own cal
   assert.strictEqual(v.source, 'calibrated');
 });
 
+test('community: audit trail must match each game, tags tell built-in / custom / shared apart', () => {
+  const g = { id: 'neon-runner', name: 'Neon Runner', yaw: 0.01 };
+  const entry = { date: '2026-11-11', id: 'neon-runner', name: 'Neon Runner', action: 'added', yaw: 0.01, by: 'someone', issue: 3 };
+  assert.deepStrictEqual(C.checkHistory([g], [entry]), []);
+  assert.match(C.checkHistory([g], []).join(), /no history entry/);
+  assert.match(C.checkHistory([{ ...g, yaw: 0.02 }], [entry]).join(), /doesn't match its latest history entry/);
+  assert.deepStrictEqual(C.checkHistory([{ ...g, yaw: 0.02 }], [entry, { ...entry, action: 'updated', yaw: 0.02 }]), []);
+  assert.match(C.checkHistory([g], [{ ...entry, date: 'yesterday' }]).join(), /YYYY-MM-DD/);
+
+  const m = fakeMachine();
+  fs.writeFileSync(m.st.communityFile, JSON.stringify({
+    games: [{ id: 'neon-runner', name: 'Neon Runner', apply: 'manual', files: {}, sens: {}, yaw: 0.01 }],
+    history: [entry, { bogus: true }],
+  }));
+  assert.deepStrictEqual(m.st.getHistory(), [entry]); // invalid entries are dropped
+  E.saveCustomGame({ name: 'Only Mine', manual: true }, m.st);
+  E.saveCustomGame({ id: 'neon-runner', name: 'Neon Runner', manual: true }, m.st);
+  const all = E.allGames(m.st);
+  const by = (id) => all.find((x) => x.id === id);
+  assert.ok(by('cs2').builtin && !by('cs2').custom && !by('cs2').community); // built-in: no tag
+  assert.ok(by('only-mine').custom && !by('only-mine').inLibrary); // custom
+  assert.ok(by('neon-runner').custom && by('neon-runner').inLibrary); // yours, and in the library: shared
+});
+
 test('community: the repo library is valid and up to date', () => {
   const { build, OUT } = require('../scripts/build-community');
   const lib = build();

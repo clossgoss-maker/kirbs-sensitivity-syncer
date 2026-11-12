@@ -26,6 +26,7 @@ function store(dataDir) {
     setUserGames: (g) => write('games.user.json', g),
     communityFile: f('community.cache.json'),
     getCommunity: () => C.loadLibrary(f('community.cache.json'), PRESETS),
+    getHistory: () => C.loadHistory(f('community.cache.json')),
   };
 }
 
@@ -38,7 +39,8 @@ function allGames(st) {
   }
   for (const g of user) {
     const base = byId.get(g.id) || {};
-    byId.set(g.id, { ...base, ...g, builtin: !!base.builtin, community: false, custom: true });
+    // inLibrary: your own copy of a game that's also in the shared library
+    byId.set(g.id, { ...base, ...g, builtin: !!base.builtin, community: false, custom: true, inLibrary: !!base.community });
   }
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

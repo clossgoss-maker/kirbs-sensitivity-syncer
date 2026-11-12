@@ -36,6 +36,7 @@ jobs:
           add-paths: |
             community/games/*.json
             community/games.json
+            community/history.json
       - name: Explain what went wrong
         if: failure()
         env:

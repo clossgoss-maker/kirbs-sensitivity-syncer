@@ -1,0 +1,21 @@
+[
+  {
+    "date": "2026-11-11",
+    "id": "cyberpunk-2077",
+    "name": "Cyberpunk 2077",
+    "action": "added",
+    "yaw": null,
+    "by": "clossgoss-maker",
+    "note": "Setup only (config file and settings), from the maintainer's own install"
+  },
+  {
+    "date": "2026-11-11",
+    "id": "cyberpunk-2077",
+    "name": "Cyberpunk 2077",
+    "action": "updated",
+    "yaw": 0.009999999955,
+    "calFov": 120,
+    "by": "clossgoss-maker",
+    "note": "Added the yaw from the maintainer's calibration (3.700601 at 29.07 cm/360, 850 DPI)"
+  }
+]

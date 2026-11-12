@@ -1,6 +1,7 @@
 'use strict';
-// Checks every shared game in community/games/*.json and writes the library the app downloads:
-// community/games.json. Exits with an error if any game is invalid, so CI catches bad submissions.
+// Checks every shared game in community/games/*.json against the audit trail in
+// community/history.json, and writes the library the app downloads: community/games.json
+// ({ games, history }). Exits with an error if anything is invalid, so CI catches bad changes.
 //   node scripts/build-community.js          build
 //   node scripts/build-community.js --check  only check that games.json is up to date
 const fs = require('fs');
@@ -10,6 +11,9 @@ const { PRESETS } = require('../core/engine');
 
 const DIR = path.join(__dirname, '..', 'community', 'games');
 const OUT = path.join(__dirname, '..', 'community', 'games.json');
+const HISTORY = path.join(__dirname, '..', 'community', 'history.json');
+
+const readHistory = () => (fs.existsSync(HISTORY) ? JSON.parse(fs.readFileSync(HISTORY, 'utf8')) : []);
 
 function build() {
   fs.mkdirSync(DIR, { recursive: true });
@@ -23,7 +27,11 @@ function build() {
     if (`${v.profile.id}.json` !== f) { problems.push(`${f}: file name must be ${v.profile.id}.json`); continue; }
     games.push(v.profile);
   }
-  return { games, problems, text: JSON.stringify({ games }, null, 2) + '\n' };
+  let history = [];
+  try { history = readHistory(); } catch (e) { problems.push(`history.json: not valid JSON (${e.message})`); }
+  if (!Array.isArray(history)) { problems.push('history.json must be a list'); history = []; }
+  problems.push(...C.checkHistory(games, history));
+  return { games, history, problems, text: JSON.stringify({ games, history }, null, 2) + '\n' };
 }
 
 if (require.main === module) {
@@ -39,4 +47,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { build, DIR, OUT };
+module.exports = { build, readHistory, DIR, OUT, HISTORY };

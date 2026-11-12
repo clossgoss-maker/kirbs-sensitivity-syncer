@@ -18,16 +18,20 @@ function fillAim() {
   $('#fovValue').value = p.fov.value;
   $('#fovType').value = p.fov.type;
   $('.fovfield').classList.toggle('off', !p.fov.enabled);
-  $('#notesOn').checked = !p.hideNotes;
-  document.documentElement.classList.toggle('hide-notes', !!p.hideNotes);
 }
 
-// Show/hide the description under each game's name (remembered between launches)
-$('#notesOn').addEventListener('change', async () => {
-  const hide = !$('#notesOn').checked;
-  document.documentElement.classList.toggle('hide-notes', hide);
-  S = await api.savePrefs({ hideNotes: hide });
-});
+// Each game's notes start hidden; its "notes" button shows them
+const openNotes = new Set();
+
+// built-in: no tag; in the shared library: "shared"; added by you only: "custom"
+function tagFor(g) {
+  if (g.community || g.inLibrary) {
+    const h = (S.history || []).filter((e) => e.id === g.id).pop();
+    return `<span class="tag shared" title="In the shared game library${h ? ` since ${esc(h.date)}` : ''}">shared</span>`;
+  }
+  if (g.custom && !g.builtin) return '<span class="tag" title="Added by you">custom</span>';
+  return '';
+}
 
 let saveTimer;
 function onAimChange() {
@@ -119,8 +123,8 @@ function renderGames() {
       : `${applyBtn}
          <button class="small" data-act="preview" data-id="${g.id}" ${ready ? '' : 'disabled'}>Preview</button>`;
     return `<div class="game">
-      <div><div class="name">${esc(g.name)}${g.custom && !g.builtin ? '<span class="tag">custom</span>' : g.community ? '<span class="tag" title="From the shared game library">shared</span>' : ''}</div>
-           <div class="note">${esc(g.notes)}</div></div>
+      <div><div class="name">${esc(g.name)}${tagFor(g)}${g.notes ? `<button class="notebtn" data-act="notes" data-id="${g.id}" title="${openNotes.has(g.id) ? 'Hide' : 'Show'} notes">${openNotes.has(g.id) ? 'notes ▴' : 'notes ▾'}</button>` : ''}</div>
+           ${g.notes && openNotes.has(g.id) ? `<div class="note">${esc(g.notes)}</div>` : ''}</div>
       <div>${chipFor(g)}</div>
       ${syncCell(g)}
       <div class="actions">${actions}
@@ -141,6 +145,7 @@ $('#games').addEventListener('click', async (e) => {
     if (act === 'preview') showResult(g.name, await api.preview(g.id), true);
     if (act === 'copy') { await navigator.clipboard.writeText(String(g.values.sens)); b.textContent = 'Copied ✓'; setTimeout(() => (b.textContent = 'Copy value'), 1200); }
     if (act === 'setup') openSetup(g.id);
+    if (act === 'notes') { if (openNotes.has(g.id)) openNotes.delete(g.id); else openNotes.add(g.id); renderGames(); }
     if (act === 'adopt') {
       if (!confirm(`Set your target to ${g.name}'s current ${g.current.cm360} cm/360${g.current.fov != null ? ` and FOV ${g.current.fov}` : ''}?`)) return;
       S = await api.adopt(g.id); fillAim(); renderGames();
@@ -373,6 +378,7 @@ function openSetup(id) {
   openModal(`
     <h2>${esc(g.name)}</h2><p>${esc(g.notes)}</p>
     <h3>Config file${g.fileIds.length > 1 ? 's' : ''}</h3>${fileBlocks}
+    ${g.community || g.inLibrary ? `<h3>Shared library history</h3>${historyTable((S.history || []).filter((e) => e.id === g.id))}` : ''}
     ${scalingBlock(g)}
     <div class="foot">
       ${g.backups ? `<button id="restoreBtn">Restore last backup (${g.backups})</button>` : ''}
@@ -433,15 +439,51 @@ async function openShare(id, note = '') {
     <textarea id="shareNote" rows="2" maxlength="300" placeholder="e.g. Close the game before applying. Works with the Steam version.">${esc(note)}</textarea>
     <div class="row" style="margin-top:6px"><button id="shareUpdate" class="small">Update preview</button></div>
     ${r.profile ? `<h3>What gets shared</h3><pre class="unknown" style="color:var(--text)">${esc(JSON.stringify(r.profile, null, 2))}</pre>` : ''}
-    <p>Sharing opens a pre-filled GitHub issue in your browser. You need a free GitHub account. Once it's approved, it reaches everyone with the next library refresh.</p>
+    <p><b>Have a GitHub account?</b> Open on GitHub sends it straight to the shared library for approval.<br>
+      <b>No GitHub account?</b> Copy the share code and send it to whoever runs the library (Discord, text, anything). They add it for you.</p>
     <div class="foot">
       <button id="shareBack" class="ghost">Back</button>
+      <button id="shareCopy" ${r.ok ? '' : 'disabled'}>Copy share code</button>
       <button id="shareGo" class="primary" ${r.ok && r.url ? '' : 'disabled'}>Open on GitHub</button>
     </div>`);
+  $('#shareCopy').addEventListener('click', async () => {
+    const code = JSON.stringify(r.profile, null, 2);
+    selfCopied = code; // don't let the clipboard pickup react to our own copy
+    try { await navigator.clipboard.writeText(code); toast('Share code copied. Paste it to whoever runs the library.'); } catch { /* ignore */ }
+  });
   $('#shareUpdate').addEventListener('click', () => openShare(id, $('#shareNote').value.trim()));
   $('#shareBack').addEventListener('click', () => openSetup(id));
   $('#shareGo').addEventListener('click', () => { if (r.url) api.openExternal(r.url); });
 }
+
+// ---------------- shared library history (audit trail) ----------------
+function historyTable(entries) {
+  if (!entries.length) return '<p>Nothing yet.</p>';
+  const repo = S.repo;
+  return `<table class="keytable history">
+    <tr><th>Date</th><th>Game</th><th>Change</th><th>Yaw</th><th>FOV</th><th>By</th><th></th></tr>
+    ${entries.slice().reverse().map((e) => `<tr>
+      <td class="mono">${esc(e.date)}</td><td>${esc(e.name)}</td><td>${esc(e.action)}</td>
+      <td class="mono">${e.yaw != null ? esc(fmt(e.yaw, 8)) : '<span class="mute">none</span>'}</td>
+      <td class="mono">${e.calFov != null ? esc(e.calFov) : ''}</td>
+      <td>${e.by ? esc(e.by) : ''}</td>
+      <td>${e.issue && repo ? `<button class="link small" data-url="https://github.com/${esc(repo)}/issues/${e.issue}">#${e.issue}</button>` : ''}</td>
+    </tr>${e.note ? `<tr class="hnote"><td></td><td colspan="6">${esc(e.note)}</td></tr>` : ''}`).join('')}
+  </table>`;
+}
+
+function openHistory() {
+  openModal(`
+    <h2>Shared library history</h2>
+    <p>Every game added to the shared library or changed, with the yaw it had at the time. Newest first.</p>
+    ${historyTable(S.history || [])}
+    ${S.repo ? `<p class="mute" style="margin-top:12px">The full record, with every change, is the <button class="link small" data-url="https://github.com/${esc(S.repo)}/commits/main/community">library's history on GitHub</button>.</p>` : ''}`);
+}
+$('#historyBtn').addEventListener('click', openHistory);
+$('#modalBody').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-url]');
+  if (b) api.openExternal(b.dataset.url);
+});
 
 // ---------------- updates and the shared library ----------------
 function onUpdate(s) {

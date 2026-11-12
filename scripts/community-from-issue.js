@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const C = require('../core/community');
 const { PRESETS } = require('../core/engine');
-const { build, DIR, OUT } = require('./build-community');
+const { build, readHistory, DIR, OUT, HISTORY } = require('./build-community');
 
 function profileFromIssueBody(body) {
   // issue forms put the textarea under "### Game profile" in a ```json block
@@ -22,7 +22,18 @@ function main() {
   const v = C.validateProfile(raw, PRESETS);
   if (!v.ok) throw new Error(`The profile isn't valid:\n- ${v.errors.join('\n- ')}`);
   fs.mkdirSync(DIR, { recursive: true });
-  fs.writeFileSync(path.join(DIR, `${v.profile.id}.json`), JSON.stringify(v.profile, null, 2) + '\n');
+  const file = path.join(DIR, `${v.profile.id}.json`);
+  const existed = fs.existsSync(file);
+  fs.writeFileSync(file, JSON.stringify(v.profile, null, 2) + '\n');
+  // audit trail: when, what yaw, who shared it, from which issue
+  const history = readHistory();
+  history.push({
+    date: new Date().toISOString().slice(0, 10), id: v.profile.id, name: v.profile.name,
+    action: existed ? 'updated' : 'added', yaw: v.profile.yaw ?? null,
+    ...(v.profile.calFov != null ? { calFov: v.profile.calFov } : {}),
+    by: event.issue.user && event.issue.user.login, issue: event.issue.number,
+  });
+  fs.writeFileSync(HISTORY, JSON.stringify(history, null, 2) + '\n');
   const lib = build();
   if (lib.problems.length) throw new Error(lib.problems.join('\n'));
   fs.writeFileSync(OUT, lib.text);

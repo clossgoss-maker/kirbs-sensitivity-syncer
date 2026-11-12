@@ -32,7 +32,7 @@ function makeHandlers(st, makeCtx, host = {}) {
       // the FOV a calibration made now would be made at (game's own units)
       return { ...s, fovForCal: g.fov ? E.fovAfterApply(g, prefs, s.current) : null, fovAffectsSens: !!g.fovAffectsSens, ...rest(g, prefs) };
     });
-    return { prefs, games, dataDir: st.dataDir, presets: E.PRESETS };
+    return { prefs, games, dataDir: st.dataDir, presets: E.PRESETS, history: st.getHistory ? st.getHistory() : [], repo: C.REPO };
   }
 
   function rest(g, prefs) {
@@ -45,6 +45,7 @@ function makeHandlers(st, makeCtx, host = {}) {
       backups: E.listBackups(g.id, st).length,
       builtin: !!g.builtin,
       community: !!g.community,
+      inLibrary: !!g.inLibrary,
       fileIds: Object.keys(g.files || {}),
     };
   }
